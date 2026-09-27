@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Petualangan Koding SD - Kelas 1 C</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js 3D Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+        
+        body {
+            font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn-bounce {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .btn-bounce:active {
+            transform: scale(0.92);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Custom scrollbar for mobile list */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-800 flex justify-center items-center min-h-screen p-0 sm:p-3">
+
+    <div class="w-full max-w-md bg-slate-50 min-h-screen sm:min-h-[840px] sm:max-h-[920px] sm:rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden relative border-0 sm:border-4 sm:border-indigo-500/30">
+        
+        <!-- Header Info Bar -->
+        <header class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white p-3.5 shadow-md relative z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="bg-amber-400 text-slate-900 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Kelas 1 C</span>
+                        <span class="text-indigo-200 text-xs font-semibold">SDN 04 Pontianak Timur</span>
+                    </div>
+                    <h1 class="text-base font-extrabold tracking-wide mt-0.5 flex items-center gap-1.5">
+                        <i class="fas fa-robot text-yellow-300"></i> Petualangan Kodi
+                    </h1>
+                </div>
+                <button onclick="openProfileModal()" class="bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-xl flex items-center gap-1.5 backdrop-blur-sm transition btn-bounce">
+                    <span class="text-sm">👤</span>
+                    <span id="header-student-name" class="text-xs font-bold truncate max-w-[80px]">Siswa</span>
+                    <i class="fas fa-edit text-[10px] opacity-70"></i>
+                </button>
+            </div>
+
+            <!-- Stats & Auto JSON Sync Status Bar -->
+            <div class="mt-2.5 pt-2 border-t border-white/20 flex justify-between items-center text-xs">
+                <div class="flex items-center gap-1.5 bg-black/15 px-2.5 py-1 rounded-lg">
+                    <span class="text-yellow-300 font-bold">🏆 Level:</span>
+                    <span id="level-display" class="font-bold text-white">1 / 5</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-black/15 px-2.5 py-1 rounded-lg">
+                    <span class="text-yellow-300">⭐ Bintang:</span>
+                    <span id="stars-display" class="font-bold text-white">0</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span id="json-sync-badge" class="bg-emerald-500/80 text-[10px] px-2 py-0.5 rounded-full text-white font-bold flex items-center gap-1">
+                        <i class="fas fa-wifi text-[9px] animate-pulse"></i> Cloud Live
+                    </span>
+                    <button onclick="toggleSound()" id="sound-btn" class="bg-black/15 p-1.5 rounded-lg text-white hover:bg-black/25 transition">
+                        <i class="fas fa-volume-up text-xs" id="sound-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="flex-1 p-3 flex flex-col gap-2.5 overflow-y-auto">
+            
+            <!-- Mission Card -->
+            <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-200/80 flex items-start gap-2.5">
+                <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 font-bold text-lg flex-shrink-0">
+                    🎯
+                </div>
+                <div class="flex-1">
+                    <h2 id="mission-title" class="font-extrabold text-xs text-indigo-950">Misi 1: Berjalan Lurus</h2>
+                    <p id="mission-desc" class="text-[11px] text-slate-600 mt-0.5 leading-snug">
+                        Tambahkan Perintah 'Maju' untuk membantu Robot Kodi sampai ke Bendera!
+                    </p>
+                </div>
+            </div>
+
+            <!-- 3D WebGL Canvas Container -->
+            <div id="canvas-container" class="relative w-full h-56 sm:h-64 rounded-2xl overflow-hidden shadow-inner border-2 border-indigo-200 bg-sky-200">
+                <canvas id="webgl-canvas" class="w-full h-full block"></canvas>
+                
+                <!-- Quick Reset Floating Button -->
+                <button onclick="resetLevel()" class="absolute top-2 right-2 bg-white/80 hover:bg-white text-slate-700 p-2 rounded-xl shadow-md backdrop-blur-sm text-xs font-bold flex items-center gap-1 btn-bounce">
+                    <i class="fas fa-sync-alt"></i> Ulang
+                </button>
+            </div>
+
+            <!-- Coding Block Command Queue -->
+            <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-1.5 px-1">
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <i class="fas fa-code text-indigo-500"></i> Alur Perintah Koding:
+                    </span>
+                    <button onclick="clearCommands()" class="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-0.5">
+                        <i class="fas fa-trash-alt"></i> Bersihkan
+                    </button>
+                </div>
+
+                <!-- Horizontal Command Slot Container -->
+                <div id="command-queue" class="flex flex-wrap gap-1.5 p-2 min-h-[48px] bg-slate-100 rounded-xl border border-slate-200/80 items-center">
+                    <span id="empty-placeholder" class="text-slate-400 text-xs italic px-2">Sentuh tombol arah di bawah untuk menyusun koding...</span>
+                </div>
+            </div>
+
+            <!-- Action Controls (Run / Reset) -->
+            <div class="grid grid-cols-1 gap-2">
+                <button id="run-btn" onclick="runCode()" class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-black text-sm py-3 px-4 rounded-2xl shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 transition btn-bounce">
+                    <i class="fas fa-play text-base"></i> Jalankan Koding Robot 🚀
+                </button>
+            </div>
+
+            <!-- Command Palette Buttons for Grade 1 Kids -->
+            <div class="grid grid-cols-2 gap-2 mt-0.5">
+                <button onclick="addCommand('FORWARD')" class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white p-3 rounded-2xl shadow-md flex items-center justify-center gap-2 font-extrabold text-xs transition btn-bounce">
+                    <i class="fas fa-arrow-up text-base"></i>
+                    <span>Maju 1 Langkah</span>
+                </button>
+                <button onclick="addCommand('COLLECT')" class="bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white p-3 rounded-2xl shadow-md flex items-center justify-center gap-2 font-extrabold text-xs transition btn-bounce">
+                    <i class="fas fa-star text-base"></i>
+                    <span>Ambil Bintang</span>
+                </button>
+                <button onclick="addCommand('TURN_LEFT')" class="bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white p-3 rounded-2xl shadow-md flex items-center justify-center gap-2 font-extrabold text-xs transition btn-bounce">
+                    <i class="fas fa-undo text-base"></i>
+                    <span>Belok Kiri</span>
+                </button>
+                <button onclick="addCommand('TURN_RIGHT')" class="bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white p-3 rounded-2xl shadow-md flex items-center justify-center gap-2 font-extrabold text-xs transition btn-bounce">
+                    <i class="fas fa-redo text-base"></i>
+                    <span>Belok Kanan</span>
+                </button>
+            </div>
+
+        </main>
+
+        <!-- Footer Info Guru & JSON Cloud Data Access -->
+        <footer class="bg-slate-800 text-slate-300 p-2.5 text-center text-[10px] border-t border-slate-700 flex justify-between items-center px-4">
+            <div>
+                <span>Guru: </span>
+                <span class="text-yellow-400 font-bold">Yenni, S.Pd.</span>
+            </div>
+            <button onclick="openRekapManager()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 transition btn-bounce shadow-md">
+                <i class="fas fa-users text-yellow-300"></i> Rekap Murid (Cloud)
+            </button>
+        </footer>
+    </div>
+
+    <!-- Profile & Welcome Modal -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border-4 border-indigo-400 text-center animate-pop">
+            <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+                🤖
+            </div>
+            <h2 class="text-xl font-extrabold text-indigo-900">Halo Teman-Teman!</h2>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Masukkan namamu untuk memulai Petualangan Koding bersama Robot Kodi!</p>
+            <form onsubmit="saveStudentProfile(event)" class="space-y-3">
+                <div>
+                    <input type="text" id="input-student-name" placeholder="Nama Lengkap / Panggilan" required class="w-full px-4 py-2.5 rounded-xl border-2 border-indigo-200 text-center text-slate-800 font-bold focus:border-indigo-500 focus:outline-none text-sm">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg btn-bounce text-sm">
+                    Mulai Belajar 🚀
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-5 max-w-xs w-full shadow-2xl border-4 border-yellow-400 text-center animate-pop">
+            <div class="text-4xl mb-2">🎉</div>
+            <h2 class="text-xl font-extrabold text-amber-600">Hore! Berhasil!</h2>
+            <p class="text-xs text-slate-600 my-2">Kamu berhasil menyelesaikan koding misi ini!</p>
+            <div class="flex justify-center gap-1 text-2xl my-3">
+                ⭐ ⭐ ⭐
+            </div>
+            <button id="next-level-btn" onclick="closeVictoryModal()" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-2.5 rounded-xl shadow-lg transition text-xs btn-bounce">
+                Lanjut Level Berikutnya ➡️
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-banner" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl text-white font-bold text-xs shadow-xl flex items-center gap-2 hidden transition-all duration-300">
+        <i id="toast-icon" class="fas fa-info-circle text-base"></i>
+        <span id="toast-msg">Notifikasi</span>
+    </div>
+
+    <!-- VISUAL REKAP MURID MODAL (For Teacher Yenni, S.Pd.) -->
+    <div id="rekap-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-3xl p-4 max-w-md w-full shadow-2xl border-2 border-indigo-400 animate-pop max-h-[85vh] flex flex-col">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                <div>
+                    <h3 class="font-bold text-indigo-900 text-base flex items-center gap-2">
+                        <i class="fas fa-graduation-cap text-indigo-600 text-lg"></i> Rekap Pembelajaran Murid
+                    </h3>
+                    <p class="text-[11px] text-slate-500">Kelas 1 C • SD Negeri 04 Pontianak Timur</p>
+                </div>
+                <button onclick="closeRekapManager()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Summary Class Stats Banner -->
+            <div class="grid grid-cols-3 gap-2 my-3">
+                <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-2 text-center">
+                    <div class="text-[10px] text-indigo-600 font-semibold">Total Murid</div>
+                    <div class="text-lg font-bold text-indigo-900" id="stat-total-students">0</div>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-2 text-center">
+                    <div class="text-[10px] text-amber-700 font-semibold">Bintang Kelas</div>
+                    <div class="text-lg font-bold text-amber-600" id="stat-total-stars">0 ⭐</div>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-2 text-center">
+                    <div class="text-[10px] text-emerald-700 font-semibold">Status Live</div>
+                    <div class="text-[11px] font-bold text-emerald-600 flex items-center justify-center gap-1 mt-1">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> Online
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="relative mb-2">
+                <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                <input type="text" id="search-student" oninput="filterStudentList()" placeholder="Cari nama murid..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-400">
+            </div>
+
+            <!-- Student Cards List Container -->
+            <div id="student-list-container" class="flex-1 overflow-y-auto space-y-2 pr-1 my-1 min-h-[160px]">
+                <div class="text-center text-slate-400 text-xs py-8">
+                    <i class="fas fa-spinner fa-spin text-lg mb-2"></i>
+                    <p>Menghubungkan data murid dari cloud...</p>
+                </div>
+            </div>
+
+            <!-- Footer Action Buttons -->
+            <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-xs">
+                <span class="text-[10px] text-slate-400">Tersinkron otomatis dari semua HP/Perangkat</span>
+                <button onclick="openResetConfirmModal()" class="text-red-500 hover:text-red-700 font-bold text-[11px] flex items-center gap-1">
+                    <i class="fas fa-trash-alt"></i> Reset lokal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Reset Confirmation Modal -->
+    <div id="reset-confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-5 max-w-xs w-full shadow-2xl border-4 border-red-300 text-center animate-pop">
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-2">
+                ⚠️
+            </div>
+            <h3 class="font-bold text-red-900 text-base">Hapus Data Perangkat Ini?</h3>
+            <p class="text-xs text-slate-500 my-2">Nama dan nilai di HP/komputer ini akan direset.</p>
+            <div class="flex gap-2 mt-4">
+                <button onclick="executeResetProgress()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl font-bold text-xs transition">
+                    Ya, Hapus
+                </button>
+                <button onclick="closeResetConfirmModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-xl font-bold text-xs transition">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE CLOUD REAL-TIME MULTI-DEVICE DATA SYNC MODULE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by environment or default
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sdn04-koding-kelas1c';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "dummy",
+            authDomain: "dummy",
+            projectId: "dummy"
+        };
+
+        let app, auth, db;
+        let authUser = null;
+        window.cloudStudentList = [];
+
+        // Generate persistent unique device student ID
+        let studentDeviceId = localStorage.getItem('sd_student_device_id');
+        if (!studentDeviceId) {
+            studentDeviceId = 'std_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+            localStorage.setItem('sd_student_device_id', studentDeviceId);
+        }
+
+        async function initCloudSync() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                    authUser = userCred.user;
+                } else {
+                    const userCred = await signInAnonymously(auth);
+                    authUser = userCred.user;
+                }
+
+                const studentsColl = collection(db, 'artifacts', appId, 'public', 'data', 'students');
+
+                onSnapshot(studentsColl, (snapshot) => {
+                    const docs = [];
+                    snapshot.forEach(d => {
+                        docs.push(d.data());
+                    });
+                    
+                    docs.sort((a, b) => (b.starsEarned || 0) - (a.starsEarned || 0));
+                    window.cloudStudentList = docs;
+                    
+                    renderStudentRekapList(docs);
+                }, (error) => {
+                    console.warn("Cloud sync listening active in local mode:", error);
+                });
+
+                window.syncStudentProgressToCloud = async function() {
+                    if (!authUser || !studentData.studentName) return;
+                    
+                    try {
+                        const studentDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'students', studentDeviceId);
+                        const payload = {
+                            id: studentDeviceId,
+                            studentName: studentData.studentName,
+                            school: studentData.school,
+                            class: studentData.class,
+                            teacher: studentData.teacher,
+                            starsEarned: studentData.starsEarned || 0,
+                            completedLevelsCount: (studentData.completedLevels || []).length,
+                            maxLevelReached: currentLevelIdx + 1,
+                            lastActive: new Date().toISOString()
+                        };
+                        await setDoc(studentDocRef, payload, { merge: true });
+                    } catch (err) {
+                        console.error("Cloud push status:", err);
+                    }
+                };
+
+                if (studentData.studentName) {
+                    window.syncStudentProgressToCloud();
+                }
+
+            } catch (err) {
+                console.warn("Offline/Fallback mode engaged:", err);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            initCloudSync();
+        });
+    </script>
+
+    <script>
+        // Sound FX Engine (Web Audio API Synthesizer)
+        let soundEnabled = true;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+                if (type === 'add') {
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'step') {
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.linearRampToValueAtTime(160, now + 0.1);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'collect') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'win') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.12);
+                    osc.frequency.setValueAtTime(783.99, now + 0.24);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.36);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(90, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-icon');
+            if (btn) {
+                btn.className = soundEnabled ? "fas fa-volume-up text-xs" : "fas fa-volume-mute text-xs text-red-300";
+            }
+            showToast(soundEnabled ? "Suara diaktifkan 🔊" : "Suara dimatikan 🔇", "info");
+        }
+
+        // Custom UI Toast Alert
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast-banner');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (!toast || !toastMsg || !toastIcon) return;
+
+            toastMsg.innerText = msg;
+            toast.classList.remove('hidden', 'bg-amber-500', 'bg-red-500', 'bg-emerald-500');
+
+            if (type === 'error') {
+                toast.classList.add('bg-red-500');
+                toastIcon.className = "fas fa-exclamation-triangle text-base";
+            } else if (type === 'success') {
+                toast.classList.add('bg-emerald-500');
+                toastIcon.className = "fas fa-check-circle text-base";
+            } else {
+                toast.classList.add('bg-amber-500');
+                toastIcon.className = "fas fa-info-circle text-base";
+            }
+
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                hideToast();
+            }, 3500);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast-banner');
+            if (toast) toast.classList.add('hidden');
+        }
+    </script>
+
+    <script>
+        // Game Level Configurations for Grade 1 C SD
+        const LEVELS = [
+            {
+                id: 1,
+                title: "Misi 1: Berjalan Lurus",
+                desc: "Tambahkan 2 Perintah 'Maju' untuk sampai ke Bendera!",
+                gridSize: 4,
+                start: { x: 0, z: 0, dir: 0 },
+                target: { x: 0, z: 2 },
+                star: null,
+                obstacles: []
+            },
+            {
+                id: 2,
+                title: "Misi 2: Belok & Maju",
+                desc: "Gunakan 'Maju', 'Belok Kanan', lalu 'Maju'!",
+                gridSize: 4,
+                start: { x: 0, z: 0, dir: 0 },
+                target: { x: 2, z: 1 },
+                star: null,
+                obstacles: []
+            },
+            {
+                id: 3,
+                title: "Misi 3: Ambil Bintang",
+                desc: "Jalan ke Bintang, gunakan perintah 'Ambil', lalu ke Bendera!",
+                gridSize: 4,
+                start: { x: 0, z: 0, dir: 0 },
+                target: { x: 0, z: 3 },
+                star: { x: 0, z: 1 },
+                obstacles: []
+            },
+            {
+                id: 4,
+                title: "Misi 4: Menghindari Batu",
+                desc: "Belok untuk menghindari batu di jalan!",
+                gridSize: 4,
+                start: { x: 0, z: 0, dir: 0 },
+                target: { x: 2, z: 2 },
+                star: { x: 2, z: 0 },
+                obstacles: [{ x: 0, z: 1 }]
+            },
+            {
+                id: 5,
+                title: "Misi 5: Petualangan Robot Super",
+                desc: "Kumpulkan Bintang dan raih Bendera Kemenangan!",
+                gridSize: 5,
+                start: { x: 0, z: 0, dir: 0 },
+                target: { x: 3, z: 3 },
+                star: { x: 1, z: 2 },
+                obstacles: [{ x: 1, z: 1 }, { x: 2, z: 2 }]
+            }
+        ];
+
+        // Central Integrated Student State
+        let studentData = {
+            school: "SD Negeri 04 Kecamatan Pontianak Timur",
+            class: "1 C SD",
+            subject: "Koding",
+            teacher: "Yenni, S.Pd.",
+            studentName: "",
+            starsEarned: 0,
+            completedLevels: [],
+            attemptsHistory: [],
+            lastUpdated: new Date().toISOString()
+        };
+
+        let currentLevelIdx = 0;
+        let commandQueue = [];
+        let isExecuting = false;
+
+        function initDataStorage() {
+            const saved = localStorage.getItem("sd_koding_student_data");
+            if (saved) {
+                try {
+                    studentData = JSON.parse(saved);
+                    const nameHeader = document.getElementById('header-student-name');
+                    if (nameHeader) nameHeader.innerText = studentData.studentName || "Siswa";
+                    updateStatsUI();
+                } catch (e) {
+                    console.error("Gagal membaca data lokal", e);
+                }
+            } else {
+                openProfileModal();
+            }
+        }
+
+        function saveProgressToJSON() {
+            studentData.lastUpdated = new Date().toISOString();
+            localStorage.setItem("sd_koding_student_data", JSON.stringify(studentData, null, 2));
+            updateStatsUI();
+            
+            if (window.syncStudentProgressToCloud) {
+                window.syncStudentProgressToCloud();
+            }
+            
+            const badge = document.getElementById('json-sync-badge');
+            if (badge) {
+                badge.classList.add('scale-110');
+                setTimeout(() => badge.classList.remove('scale-110'), 300);
+            }
+        }
+
+        function updateStatsUI() {
+            const starsEl = document.getElementById('stars-display');
+            if (starsEl) starsEl.innerText = studentData.starsEarned;
+            
+            const levelEl = document.getElementById('level-display');
+            if (levelEl) levelEl.innerText = `${currentLevelIdx + 1} / ${LEVELS.length}`;
+        }
+
+        function saveStudentProfile(e) {
+            e.preventDefault();
+            const inputNameEl = document.getElementById('input-student-name');
+            const inputName = inputNameEl ? inputNameEl.value.trim() : '';
+            if (inputName) {
+                studentData.studentName = inputName;
+                const nameHeader = document.getElementById('header-student-name');
+                if (nameHeader) nameHeader.innerText = inputName;
+                saveProgressToJSON();
+                closeProfileModal();
+                showToast(`Selamat belajar, ${inputName}!`, 'success');
+            }
+        }
+
+        // Render Visual Rekapitulasi Dashboard for Teacher Yenni, S.Pd.
+        function renderStudentRekapList(list) {
+            const container = document.getElementById('student-list-container');
+            if (!container) return;
+
+            let activeList = [...list];
+            if (activeList.length === 0 && studentData.studentName) {
+                activeList.push({
+                    studentName: studentData.studentName,
+                    starsEarned: studentData.starsEarned || 0,
+                    completedLevelsCount: (studentData.completedLevels || []).length,
+                    maxLevelReached: currentLevelIdx + 1,
+                    lastActive: new Date().toISOString()
+                });
+            }
+
+            const totalStars = activeList.reduce((acc, curr) => acc + (curr.starsEarned || 0), 0);
+            const totalStudentsEl = document.getElementById('stat-total-students');
+            const totalStarsEl = document.getElementById('stat-total-stars');
+            if (totalStudentsEl) totalStudentsEl.innerText = activeList.length;
+            if (totalStarsEl) totalStarsEl.innerText = `${totalStars} ⭐`;
+
+            const query = (document.getElementById('search-student')?.value || '').toLowerCase();
+            const filtered = activeList.filter(s => (s.studentName || '').toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-slate-400 text-xs py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                        <i class="fas fa-user-slash text-2xl mb-1 text-slate-300"></i>
+                        <p>Belum ada murid terdaftar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            filtered.forEach((std, idx) => {
+                const card = document.createElement('div');
+                const isTop = idx === 0 && (std.starsEarned || 0) > 0;
+                card.className = `p-2.5 rounded-2xl border flex items-center justify-between transition ${
+                    isTop ? 'bg-amber-50/80 border-amber-300 shadow-sm' : 'bg-slate-50 border-slate-200'
+                }`;
+
+                const rankBadge = isTop ? '👑' : `#${idx + 1}`;
+                const timeAgo = formatTimeAgo(std.lastActive);
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl ${isTop ? 'bg-amber-400 text-white' : 'bg-indigo-100 text-indigo-700'} font-bold text-xs flex items-center justify-center shadow-sm">
+                            ${rankBadge}
+                        </div>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800 flex items-center gap-1">
+                                <span>${escapeHtml(std.studentName || 'Murid')}</span>
+                                ${std.studentName === studentData.studentName ? '<span class="text-[9px] bg-indigo-500 text-white px-1.5 py-0.2 rounded-full">Kamu</span>' : ''}
+                            </div>
+                            <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
+                                <span>🎯 Level ${std.maxLevelReached || 1}</span>
+                                <span>•</span>
+                                <span>🕒 ${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-amber-500 font-bold text-xs flex items-center gap-1 justify-end">
+                            <i class="fas fa-star text-xs"></i>
+                            <span>${std.starsEarned || 0}</span>
+                        </div>
+                        <div class="text-[9px] text-emerald-600 font-semibold bg-emerald-100 px-1.5 py-0.5 rounded-md mt-0.5 inline-block">
+                            ${std.completedLevelsCount || 0}/5 Selesai
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterStudentList() {
+            renderStudentRekapList(window.cloudStudentList || []);
+        }
+
+        function openRekapManager() {
+            renderStudentRekapList(window.cloudStudentList || []);
+            const modal = document.getElementById('rekap-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeRekapManager() {
+            const modal = document.getElementById('rekap-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function formatTimeAgo(isoString) {
+            if (!isoString) return 'Baru saja';
+            const diff = Math.floor((new Date() - new Date(isoString)) / 1000);
+            if (diff < 60) return 'Baru saja';
+            if (diff < 3600) return `${Math.floor(diff / 60)} mnt lalu`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`;
+            return `${Math.floor(diff / 86400)} hr lalu`;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+    </script>
+
+    <script>
+        // Three.js WebGL Scene Variables
+        let scene, camera, renderer;
+        let robotMesh, flagMesh, starMesh, obstacleMeshes = [];
+        let gridGroup;
+
+        let robotPos = { x: 0, z: 0, dir: 0 };
+        let hasCollectedStar = false;
+
+        function initWebGL() {
+            const container = document.getElementById('canvas-container');
+            const canvas = document.getElementById('webgl-canvas');
+            
+            if (!container || !canvas) {
+                console.warn("Canvas container or canvas element missing.");
+                return;
+            }
+
+            const width = container.clientWidth || 320;
+            const height = container.clientHeight || 240;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xbae6fd);
+
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            buildLevelScene();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (starMesh && starMesh.visible) {
+                    starMesh.rotation.y += 0.03;
+                }
+                if (flagMesh) {
+                    flagMesh.rotation.y += 0.01;
+                }
+                if (renderer && scene && camera) {
+                    renderer.render(scene, camera);
+                }
+            }
+            animate();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            if (!container || !renderer || !camera) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            if (width > 0 && height > 0) {
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+        }
+
+        function buildLevelScene() {
+            if (!scene) return;
+            const level = LEVELS[currentLevelIdx];
+            robotPos = { ...level.start };
+            hasCollectedStar = false;
+
+            while (scene.children.length > 0) {
+                scene.remove(scene.children[0]);
+            }
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            dirLight.position.set(5, 10, 5);
+            scene.add(dirLight);
+
+            gridGroup = new THREE.Group();
+            obstacleMeshes = [];
+
+            const tileSize = 1.2;
+            for (let x = 0; x < level.gridSize; x++) {
+                for (let z = 0; z < level.gridSize; z++) {
+                    const isEven = (x + z) % 2 === 0;
+                    const tileGeo = new THREE.BoxGeometry(tileSize - 0.05, 0.2, tileSize - 0.05);
+                    const tileMat = new THREE.MeshLambertMaterial({
+                        color: isEven ? 0x4ade80 : 0x22c55e
+                    });
+                    const tile = new THREE.Mesh(tileGeo, tileMat);
+                    tile.position.set(x * tileSize, -0.1, z * tileSize);
+                    gridGroup.add(tile);
+                }
+            }
+            scene.add(gridGroup);
+
+            robotMesh = createRobotMesh();
+            updateRobotTransform(false);
+            scene.add(robotMesh);
+
+            flagMesh = createFlagMesh();
+            flagMesh.position.set(level.target.x * tileSize, 0.4, level.target.z * tileSize);
+            scene.add(flagMesh);
+
+            if (level.star) {
+                starMesh = createStarMesh();
+                starMesh.position.set(level.star.x * tileSize, 0.4, level.star.z * tileSize);
+                scene.add(starMesh);
+            } else {
+                starMesh = null;
+            }
+
+            level.obstacles.forEach(obs => {
+                const rock = createRockMesh();
+                rock.position.set(obs.x * tileSize, 0.3, obs.z * tileSize);
+                scene.add(rock);
+                obstacleMeshes.push(rock);
+            });
+
+            const centerPos = (level.gridSize - 1) * tileSize / 2;
+            camera.position.set(centerPos, level.gridSize * 1.6 + 2, centerPos + level.gridSize * 1.3 + 1);
+            camera.lookAt(centerPos, 0, centerPos);
+
+            const mTitle = document.getElementById('mission-title');
+            const mDesc = document.getElementById('mission-desc');
+            if (mTitle) mTitle.innerText = level.title;
+            if (mDesc) mDesc.innerText = level.desc;
+            updateStatsUI();
+        }
+
+        function createRobotMesh() {
+            const group = new THREE.Group();
+            const bodyGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.3 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.4;
+            group.add(body);
+
+            const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0x60a5fa });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 0.85;
+            group.add(head);
+
+            const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+            const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeL.position.set(0.1, 0.88, 0.22);
+            const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeR.position.set(-0.1, 0.88, 0.22);
+            group.add(eyeL);
+            group.add(eyeR);
+
+            return group;
+        }
+
+        function createFlagMesh() {
+            const group = new THREE.Group();
+            const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.8);
+            const poleMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+            const pole = new THREE.Mesh(poleGeo, poleMat);
+            group.add(pole);
+
+            const flagGeo = new THREE.BoxGeometry(0.35, 0.25, 0.02);
+            const flagMat = new THREE.MeshLambertMaterial({ color: 0xef4444 });
+            const flag = new THREE.Mesh(flagGeo, flagMat);
+            flag.position.set(0.18, 0.25, 0);
+            group.add(flag);
+
+            return group;
+        }
+
+        function createStarMesh() {
+            const starGeo = new THREE.OctahedronGeometry(0.28, 0);
+            const starMat = new THREE.MeshStandardMaterial({ color: 0xeab308, metalness: 0.5, roughness: 0.2 });
+            return new THREE.Mesh(starGeo, starMat);
+        }
+
+        function createRockMesh() {
+            const rockGeo = new THREE.DodecahedronGeometry(0.3, 0);
+            const rockMat = new THREE.MeshStandardMaterial({ color: 0x64748b });
+            const rock = new THREE.Mesh(rockGeo, rockMat);
+            rock.rotation.x = Math.random() * Math.PI;
+            return rock;
+        }
+
+        function updateRobotTransform(animate = true) {
+            if (!robotMesh) return Promise.resolve();
+
+            const tileSize = 1.2;
+            const targetX = robotPos.x * tileSize;
+            const targetZ = robotPos.z * tileSize;
+            const targetRotY = robotPos.dir * (Math.PI / 2);
+
+            if (!animate) {
+                robotMesh.position.set(targetX, 0, targetZ);
+                robotMesh.rotation.y = targetRotY;
+                return Promise.resolve();
+            } else {
+                const startPos = robotMesh.position.clone();
+                const endPos = new THREE.Vector3(targetX, 0, targetZ);
+                const startRot = robotMesh.rotation.y;
+
+                let progress = 0;
+                return new Promise(resolve => {
+                    function step() {
+                        progress += 0.1;
+                        if (progress >= 1) {
+                            robotMesh.position.copy(endPos);
+                            robotMesh.rotation.y = targetRotY;
+                            resolve();
+                        } else {
+                            robotMesh.position.lerpVectors(startPos, endPos, progress);
+                            robotMesh.rotation.y = THREE.MathUtils.lerp(startRot, targetRotY, progress);
+                            requestAnimationFrame(step);
+                        }
+                    }
+                    step();
+                });
+            }
+        }
+
+        function addCommand(type) {
+            if (isExecuting) return;
+            commandQueue.push(type);
+            playSound('add');
+            renderCommandQueue();
+        }
+
+        function removeCommand(index) {
+            if (isExecuting) return;
+            commandQueue.splice(index, 1);
+            renderCommandQueue();
+        }
+
+        function clearCommands() {
+            if (isExecuting) return;
+            commandQueue = [];
+            renderCommandQueue();
+        }
+
+        function renderCommandQueue() {
+            const queueEl = document.getElementById('command-queue');
+            if (!queueEl) return;
+
+            queueEl.innerHTML = '';
+
+            if (commandQueue.length === 0) {
+                queueEl.innerHTML = '<span id="empty-placeholder" class="text-slate-400 text-xs italic px-2">Sentuh tombol arah di bawah untuk menyusun koding...</span>';
+                return;
+            }
+
+            const commandDetails = {
+                'FORWARD': { name: 'Maju', bg: 'bg-blue-500', icon: 'fa-arrow-up' },
+                'TURN_LEFT': { name: 'Kiri', bg: 'bg-purple-500', icon: 'fa-undo' },
+                'TURN_RIGHT': { name: 'Kanan', bg: 'bg-indigo-500', icon: 'fa-redo' },
+                'COLLECT': { name: 'Ambil', bg: 'bg-amber-500', icon: 'fa-star' }
+            };
+
+            commandQueue.forEach((cmd, idx) => {
+                const info = commandDetails[cmd];
+                const badge = document.createElement('div');
+                badge.className = `${info.bg} text-white px-2 py-1 rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm animate-pop`;
+                badge.innerHTML = `
+                    <i class="fas ${info.icon} text-[10px]"></i>
+                    <span>${info.name}</span>
+                    <button onclick="removeCommand(${idx})" class="ml-1 text-white/70 hover:text-white">&times;</button>
+                `;
+                queueEl.appendChild(badge);
+            });
+        }
+
+        async function runCode() {
+            if (isExecuting) return;
+            if (commandQueue.length === 0) {
+                playSound('error');
+                showToast("Tambahkan blok perintah koding dulu ya!", "error");
+                return;
+            }
+
+            isExecuting = true;
+            const runBtn = document.getElementById('run-btn');
+            if (runBtn) runBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const level = LEVELS[currentLevelIdx];
+            robotPos = { ...level.start };
+            hasCollectedStar = false;
+            if (starMesh) starMesh.visible = true;
+            updateRobotTransform(false);
+
+            let hasError = false;
+
+            for (let i = 0; i < commandQueue.length; i++) {
+                const cmd = commandQueue[i];
+                playSound('step');
+
+                if (cmd === 'FORWARD') {
+                    let dx = 0, dz = 0;
+                    if (robotPos.dir === 0) dz = 1;
+                    else if (robotPos.dir === 1) dx = 1;
+                    else if (robotPos.dir === 2) dz = -1;
+                    else if (robotPos.dir === 3) dx = -1;
+
+                    const nextX = robotPos.x + dx;
+                    const nextZ = robotPos.z + dz;
+
+                    if (nextX < 0 || nextX >= level.gridSize || nextZ < 0 || nextZ >= level.gridSize) {
+                        hasError = true;
+                        playSound('error');
+                        showToast("Awas! Robot Kodi keluar dari area lapangan!", "error");
+                        break;
+                    }
+
+                    const hitObstacle = level.obstacles.some(o => o.x === nextX && o.z === nextZ);
+                    if (hitObstacle) {
+                        hasError = true;
+                        playSound('error');
+                        showToast("Ups! Robot menabrak batu! Coba ubah koding kamu.", "error");
+                        break;
+                    }
+
+                    robotPos.x = nextX;
+                    robotPos.z = nextZ;
+                } else if (cmd === 'TURN_LEFT') {
+                    robotPos.dir = (robotPos.dir + 3) % 4;
+                } else if (cmd === 'TURN_RIGHT') {
+                    robotPos.dir = (robotPos.dir + 1) % 4;
+                } else if (cmd === 'COLLECT') {
+                    if (level.star && robotPos.x === level.star.x && robotPos.z === level.star.z) {
+                        hasCollectedStar = true;
+                        if (starMesh) starMesh.visible = false;
+                        playSound('collect');
+                        showToast("Bintang berhasil diambil! ⭐", "success");
+                    }
+                }
+
+                await updateRobotTransform(true);
+                await new Promise(r => setTimeout(r, 180));
+            }
+
+            studentData.attemptsHistory.push({
+                level: currentLevelIdx + 1,
+                commands: [...commandQueue],
+                success: !hasError && (robotPos.x === level.target.x && robotPos.z === level.target.z),
+                timestamp: new Date().toISOString()
+            });
+            saveProgressToJSON();
+
+            if (!hasError) {
+                const reachedTarget = (robotPos.x === level.target.x && robotPos.z === level.target.z);
+                const starNeeded = !!level.star;
+
+                if (reachedTarget) {
+                    if (starNeeded && !hasCollectedStar) {
+                        playSound('error');
+                        showToast("Hampir berhasil! Tapi kamu belum mengambil Bintang ⭐.", "error");
+                    } else {
+                        onLevelSuccess();
+                    }
+                } else {
+                    playSound('error');
+                    showToast("Robot Kodi belum sampai di Bendera Target.", "error");
+                }
+            }
+
+            isExecuting = false;
+            if (runBtn) runBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function onLevelSuccess() {
+            playSound('win');
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            const starsEarnedThisLevel = hasCollectedStar || !LEVELS[currentLevelIdx].star ? 3 : 2;
+            
+            if (!studentData.completedLevels.includes(currentLevelIdx + 1)) {
+                studentData.completedLevels.push(currentLevelIdx + 1);
+                studentData.starsEarned += starsEarnedThisLevel;
+                saveProgressToJSON();
+            }
+
+            const victoryModal = document.getElementById('victory-modal');
+            if (victoryModal) victoryModal.classList.remove('hidden');
+
+            const nextBtn = document.getElementById('next-level-btn');
+            if (nextBtn) {
+                if (currentLevelIdx >= LEVELS.length - 1) {
+                    nextBtn.innerText = "🏆 Selesai Semua Level!";
+                    nextBtn.onclick = () => {
+                        closeVictoryModal();
+                        openRekapManager();
+                    };
+                } else {
+                    nextBtn.innerText = "Lanjut Level Berikutnya ➡️";
+                    nextBtn.onclick = () => {
+                        closeVictoryModal();
+                        nextLevel();
+                    };
+                }
+            }
+        }
+
+        function nextLevel() {
+            if (currentLevelIdx < LEVELS.length - 1) {
+                currentLevelIdx++;
+                clearCommands();
+                buildLevelScene();
+            }
+        }
+
+        function resetLevel() {
+            clearCommands();
+            buildLevelScene();
+            showToast("Level diulang.", "info");
+        }
+
+        function openProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profile-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function closeVictoryModal() {
+            const modal = document.getElementById('victory-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openResetConfirmModal() {
+            const modal = document.getElementById('reset-confirm-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeResetConfirmModal() {
+            const modal = document.getElementById('reset-confirm-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function executeResetProgress() {
+            localStorage.removeItem("sd_koding_student_data");
+            studentData = {
+                school: "SD Negeri 04 Kecamatan Pontianak Timur",
+                class: "1 C SD",
+                subject: "Koding",
+                teacher: "Yenni, S.Pd.",
+                studentName: "",
+                starsEarned: 0,
+                completedLevels: [],
+                attemptsHistory: [],
+                lastUpdated: new Date().toISOString()
+            };
+            currentLevelIdx = 0;
+            clearCommands();
+            closeResetConfirmModal();
+            closeRekapManager();
+            openProfileModal();
+            buildLevelScene();
+            showToast("Data perangkat telah direset.", "info");
+        }
+
+        window.onload = function() {
+            initDataStorage();
+            initWebGL();
+        };
+    </script>
+</body>
+</html>
